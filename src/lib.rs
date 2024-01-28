@@ -56,6 +56,7 @@ pub struct GithubRepo {
     url: String,
     git_url: String,
     language: Option<String>,
+    default_branch: String,
 }
 
 pub struct GitRepo {
