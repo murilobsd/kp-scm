@@ -1,9 +1,9 @@
 // Copyright (c) 2023 Murilo Ijanc' <mbsd@m0x.ru>
-// 
+//
 // Permission to use, copy, modify, and distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 // WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 // MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -12,11 +12,42 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-#[cfg(tests)]
-mod test {
+use std::path::Path;
+
+use git2::Repository;
+
+pub struct GitRepo {
+    repo: Repository,
+}
+
+impl GitRepo {
+    pub fn clone(src: &str, dest: &Path) -> Self {
+        let repo = match Repository::clone(src, dest) {
+            Ok(repo) => repo,
+            Err(e) => panic!("failed to clone: {}", e),
+        };
+        Self { repo }
+    }
+
+    pub fn dest(&self) -> &Path {
+        self.repo.workdir().unwrap()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
 
     #[test]
     fn git_clone() {
-        assert!(true);
+        let src = "https://github.com/murilobsd/thread-pool";
+        let dest = std::env::current_dir().unwrap().join("thread-pool");
+        let repo = GitRepo::clone(src, &dest);
+
+        assert_eq!(dest.as_path(), repo.dest());
+        assert!(dest.exists());
+        assert!(dest.is_dir());
+
+        std::fs::remove_dir_all(&dest).unwrap();
     }
 }
